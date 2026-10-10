@@ -1,0 +1,81 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+
+struct TreeNode {
+    int data;
+    TreeNode* parent;
+    vector<TreeNode*> children;
+};
+
+TreeNode* createNode(int val, TreeNode* parent) {
+    TreeNode* n = new TreeNode;
+    n->data = val;
+    n->parent = parent;
+    return n;
+}
+
+TreeNode* findNode(TreeNode* root, int val) {
+    if (root == nullptr) return nullptr;
+    if (root->data == val) return root;
+    for (TreeNode* c : root->children) {
+        TreeNode* found = findNode(c, val);
+        if (found != nullptr) return found;
+    }
+    return nullptr;
+}
+
+bool addChild(TreeNode* root, int parentVal, int val) {
+    if (root == nullptr) {
+        cout << "Error: tree is empty.\n";
+        return false;
+    }
+    if (findNode(root, val) != nullptr) {
+        cout << "Error: value " << val << " already exists.\n";
+        return false;
+    }
+    TreeNode* p = findNode(root, parentVal);
+    if (p == nullptr) {
+        cout << "Error: parent " << parentVal << " not found.\n";
+        return false;
+    }
+    p->children.push_back(createNode(val, p));
+    return true;
+}
+
+void printTree(TreeNode* node) {
+    if (node == nullptr) return;
+    cout << "Node " << node->data << " | Parent: ";
+    if (node->parent) cout << node->parent->data;
+    else cout << "None";
+    cout << " | Children: ";
+    if (node->children.empty()) cout << "None";
+    for (TreeNode* c : node->children) cout << c->data << " ";
+    cout << endl;
+    for (TreeNode* c : node->children) printTree(c);
+}
+
+int main() {
+    TreeNode* root = createNode(1, nullptr);
+
+    addChild(root, 1, 2);
+    addChild(root, 1, 3);
+    addChild(root, 1, 4);
+    addChild(root, 2, 5);
+    addChild(root, 2, 6);
+    addChild(root, 3, 7);
+    addChild(root, 4, 8);
+    addChild(root, 4, 9);
+    addChild(root, 4, 10);
+    addChild(root, 5, 11);
+    addChild(root, 7, 12);
+
+    cout << "--- Invalid input tests ---\n";
+    addChild(root, 99, 100);  
+    addChild(root, 5, 2);    
+    
+    cout << "\n--- Tree (12 nodes) ---\n";
+    printTree(root);
+
+    return 0;
+}
