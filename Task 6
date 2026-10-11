@@ -1,0 +1,133 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <string>
+#include <algorithm>
+using namespace std;
+
+struct TreeNode {
+    string data;
+    TreeNode* parent;
+    vector<TreeNode*> children;
+    TreeNode(string d, TreeNode* p = nullptr) : data(d), parent(p) {}
+    TreeNode* addChild(string d) {
+        TreeNode* c = new TreeNode(d, this);
+        children.push_back(c);
+        return c;
+    }
+};
+
+TreeNode* findNode(TreeNode* n, const string& d) {
+    if (!n) return nullptr;
+    if (n->data == d) return n;
+    for (TreeNode* c : n->children)
+        if (TreeNode* r = findNode(c, d)) return r;
+    return nullptr;
+}
+
+void freeSubtree(TreeNode* n) {
+    for (TreeNode* c : n->children) freeSubtree(c);   
+    cout << "Freed: " << n->data << endl;
+    delete n;                                         
+}
+
+void deleteNode(TreeNode*& root, TreeNode* target) {
+    if (!target) return;
+    if (target == root) {                             
+        freeSubtree(root);
+        root = nullptr;
+        return;
+    }
+    vector<TreeNode*>& sib = target->parent->children;
+    sib.erase(remove(sib.begin(), sib.end(), target), sib.end());  
+    freeSubtree(target);
+}
+
+int countNodes(TreeNode* n) {
+    if (!n) return 0;
+    int total = 1;
+    for (TreeNode* c : n->children) total += countNodes(c);
+    return total;
+}
+
+int height(TreeNode* n) {
+    if (!n) return -1;                       
+    int h = 0;                               
+    for (TreeNode* c : n->children) h = max(h, 1 + height(c));
+    return h;
+}
+
+int countLeaves(TreeNode* n) {
+    if (!n) return 0;
+    if (n->children.empty()) return 1;
+    int total = 0;
+    for (TreeNode* c : n->children) total += countLeaves(c);
+    return total;
+}
+
+void bfs(TreeNode* root) {
+    if (!root) return;
+    queue<TreeNode*> q;
+    q.push(root);
+    while (!q.empty()) {
+        TreeNode* cur = q.front();
+        q.pop();
+        cout << cur->data << " ";
+        for (TreeNode* c : cur->children) q.push(c);
+    }
+}
+
+void preorder(TreeNode* n) {
+    if (!n) return;
+    cout << n->data << " ";                        
+    for (TreeNode* c : n->children) preorder(c);
+}
+
+void postorder(TreeNode* n) {
+    if (!n) return;
+    for (TreeNode* c : n->children) postorder(c);
+    cout << n->data << " ";                        
+}
+
+
+void analyze(TreeNode* root, const string& label) {
+    cout << "\n=== " << label << " ===" << endl;
+    if (!root) { cout << "Tree is empty" << endl; return; }
+    cout << "Nodes:      " << countNodes(root) << endl;
+    cout << "Height:     " << height(root) << endl;
+    cout << "Leaves:     " << countLeaves(root) << endl;
+    cout << "BFS:        "; bfs(root);       cout << endl;
+    cout << "Pre-order:  "; preorder(root);  cout << endl;
+    cout << "Post-order: "; postorder(root); cout << endl;
+}
+
+void safeDelete(TreeNode*& root, const string& value) {
+    TreeNode* t = findNode(root, value);     
+    if (!t) { cout << "Node '" << value << "' not found" << endl; return; }
+    deleteNode(root, t);
+}
+
+int main() {
+    TreeNode* root = new TreeNode("A");
+    TreeNode* b = root->addChild("B");
+    root->addChild("C");
+    TreeNode* d = root->addChild("D");
+    b->addChild("E");
+    b->addChild("F");
+    d->addChild("G");
+
+    analyze(root, "ORIGINAL TREE");
+
+    cout << "\nTrying to delete invalid node Z..." << endl;
+    safeDelete(root, "Z");
+
+    cout << "\nDeleting B..." << endl;
+    safeDelete(root, "B");
+    analyze(root, "AFTER DELETING B");
+
+    cout << "\nDeleting root A..." << endl;
+    safeDelete(root, "A");
+    analyze(root, "AFTER DELETING ROOT");   
+
+    return 0;                               
+}
