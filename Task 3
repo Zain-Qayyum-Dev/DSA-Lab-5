@@ -1,0 +1,110 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+
+struct TreeNode {
+    int data;
+    TreeNode* parent;
+    vector<TreeNode*> children;
+};
+
+TreeNode* createNode(int val, TreeNode* parent) {
+    TreeNode* n = new TreeNode;
+    n->data = val;
+    n->parent = parent;
+    return n;
+}
+
+TreeNode* findNode(TreeNode* root, int val) {
+    if (root == nullptr) return nullptr;
+    if (root->data == val) return root;
+    for (TreeNode* c : root->children) {
+        TreeNode* found = findNode(c, val);
+        if (found != nullptr) return found;
+    }
+    return nullptr;
+}
+
+bool addChild(TreeNode* root, int parentVal, int val) {
+    if (root == nullptr) {
+        cout << "Error: tree is empty.\n";
+        return false;
+    }
+    if (findNode(root, val) != nullptr) {
+        cout << "Error: value " << val << " already exists.\n";
+        return false;
+    }
+    TreeNode* p = findNode(root, parentVal);
+    if (p == nullptr) {
+        cout << "Error: parent " << parentVal << " not found.\n";
+        return false;
+    }
+    p->children.push_back(createNode(val, p));
+    return true;
+}
+
+bool isRoot(TreeNode* node) {
+    return node != nullptr && node->parent == nullptr;
+}
+
+bool isLeaf(TreeNode* node) {
+    return node != nullptr && node->children.empty();
+}
+
+int degree(TreeNode* node) {
+    if (node == nullptr) return -1;
+    return node->children.size();
+}
+
+int countNodes(TreeNode* node) {
+    if (node == nullptr) return 0;
+    int total = 1;
+    for (TreeNode* c : node->children)
+        total += countNodes(c);
+    return total;
+}
+
+void testNode(TreeNode* root, int val) {
+    TreeNode* n = findNode(root, val);
+    if (n == nullptr) {
+        cout << "Error: node " << val << " not found.\n";
+        return;
+    }
+    cout << "Node " << val
+         << " | Root: " << (isRoot(n) ? "Yes" : "No")
+         << " | Leaf: " << (isLeaf(n) ? "Yes" : "No")
+         << " | Degree: " << degree(n) << endl;
+}
+
+int main() {
+    TreeNode* root = createNode(1, nullptr);
+    addChild(root, 1, 2);
+    addChild(root, 1, 3);
+    addChild(root, 1, 4);
+    addChild(root, 2, 5);
+    addChild(root, 2, 6);
+    addChild(root, 3, 7);
+    addChild(root, 4, 8);
+    addChild(root, 4, 9);
+    addChild(root, 4, 10);
+    addChild(root, 5, 11);
+    addChild(root, 7, 12);
+
+    cout << "--- Task 2: Basic Operations ---\n";
+    testNode(root, 1);
+    testNode(root, 2);
+    testNode(root, 4);
+    testNode(root, 11);
+    testNode(root, 6);
+    testNode(root, 99);
+
+    cout << "\nTotal nodes in tree: " << countNodes(root) << endl;
+    cout << "Nodes in subtree of 4: " << countNodes(findNode(root, 4)) << endl;
+    cout << "Nodes in empty tree: " << countNodes(nullptr) << endl;
+
+    TreeNode* single = createNode(50, nullptr);
+    cout << "\nSingle-node tree: ";
+    testNode(single, 50);
+
+    return 0;
+}
