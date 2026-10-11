@@ -1,20 +1,48 @@
+#include <queue>
 #include <iostream>
 #include <vector>
-#include <queue>
-#include <string>
 using namespace std;
 
 struct TreeNode {
-    string data;
+    int data;
     TreeNode* parent;
     vector<TreeNode*> children;
-    TreeNode(string d, TreeNode* p = nullptr) : data(d), parent(p) {}
-    TreeNode* addChild(string d) {
-        TreeNode* c = new TreeNode(d, this);
-        children.push_back(c);
-        return c;
-    }
 };
+
+TreeNode* createNode(int val, TreeNode* parent) {
+    TreeNode* n = new TreeNode;
+    n->data = val;
+    n->parent = parent;
+    return n;
+}
+
+TreeNode* findNode(TreeNode* root, int val) {
+    if (root == nullptr) return nullptr;
+    if (root->data == val) return root;
+    for (TreeNode* c : root->children) {
+        TreeNode* found = findNode(c, val);
+        if (found != nullptr) return found;
+    }
+    return nullptr;
+}
+
+bool addChild(TreeNode* root, int parentVal, int val) {
+    if (root == nullptr) {
+        cout << "Error: tree is empty.\n";
+        return false;
+    }
+    if (findNode(root, val) != nullptr) {
+        cout << "Error: value " << val << " already exists.\n";
+        return false;
+    }
+    TreeNode* p = findNode(root, parentVal);
+    if (p == nullptr) {
+        cout << "Error: parent " << parentVal << " not found.\n";
+        return false;
+    }
+    p->children.push_back(createNode(val, p));
+    return true;
+}
 
 void bfs(TreeNode* root) {
     if (!root) return;
@@ -30,27 +58,28 @@ void bfs(TreeNode* root) {
 
 void preorder(TreeNode* n) {
     if (!n) return;
-    cout << n->data << " ";                       
+    cout << n->data << " ";
     for (TreeNode* c : n->children) preorder(c);
 }
 
 void postorder(TreeNode* n) {
     if (!n) return;
     for (TreeNode* c : n->children) postorder(c);
-    cout << n->data << " ";                       
+    cout << n->data << " ";
 }
 
 int main() {
-    TreeNode* root = new TreeNode("A");
-    TreeNode* b = root->addChild("B");
-    root->addChild("C");
-    TreeNode* d = root->addChild("D");
-    b->addChild("E");
-    b->addChild("F");
-    d->addChild("G");
+    TreeNode* root = createNode(1, nullptr);
+    addChild(root, 1, 2);
+    addChild(root, 1, 3);
+    addChild(root, 1, 4);
+    addChild(root, 2, 5);
+    addChild(root, 2, 6);
+    addChild(root, 4, 7);
 
     cout << "BFS:        "; bfs(root);       cout << endl;
-    cout << "Pre-order:  "; preorder(root);  cout << endl;
+    cout << "Pre-order:  "; preorder(root);   cout << endl;
     cout << "Post-order: "; postorder(root); cout << endl;
+
     return 0;
 }
