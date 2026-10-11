@@ -1,0 +1,89 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <string>
+#include <algorithm>
+using namespace std;
+
+struct TreeNode {
+    string data;
+    TreeNode* parent;
+    vector<TreeNode*> children;
+    TreeNode(string d, TreeNode* p = nullptr) : data(d), parent(p) {}
+    TreeNode* addChild(string d) {
+        TreeNode* c = new TreeNode(d, this);
+        children.push_back(c);
+        return c;
+    }
+};
+
+TreeNode* findNode(TreeNode* n, const string& d) {
+    if (!n) return nullptr;
+    if (n->data == d) return n;
+    for (TreeNode* c : n->children)
+        if (TreeNode* r = findNode(c, d)) return r;
+    return nullptr;
+}
+
+void freeSubtree(TreeNode* n) {
+    for (TreeNode* c : n->children) freeSubtree(c);   
+    cout << "Freed: " << n->data << endl;
+    delete n;                                         
+}
+
+void deleteNode(TreeNode*& root, TreeNode* target) {
+    if (!target) return;
+    if (target == root) {                             
+        freeSubtree(root);
+        root = nullptr;
+        return;
+    }
+    vector<TreeNode*>& sib = target->parent->children;
+    sib.erase(remove(sib.begin(), sib.end(), target), sib.end());  
+    freeSubtree(target);
+}
+
+void bfs(TreeNode* root) {
+    if (!root) return;
+    queue<TreeNode*> q;
+    q.push(root);
+    while (!q.empty()) {
+        TreeNode* cur = q.front();
+        q.pop();
+        cout << cur->data << " ";
+        for (TreeNode* c : cur->children) q.push(c);
+    }
+}
+
+void preorder(TreeNode* n) {
+    if (!n) return;
+    cout << n->data << " ";                        
+    for (TreeNode* c : n->children) preorder(c);
+}
+
+void postorder(TreeNode* n) {
+    if (!n) return;
+    for (TreeNode* c : n->children) postorder(c);
+    cout << n->data << " ";                        
+}
+
+int main() {
+    TreeNode* root = new TreeNode("A");
+    TreeNode* b = root->addChild("B");
+    root->addChild("C");
+    TreeNode* d = root->addChild("D");
+    b->addChild("E");
+    b->addChild("F");
+    d->addChild("G");
+
+    cout << "Before:        "; preorder(root); cout << endl;
+
+    cout << "\nDeleting B...\n";
+    deleteNode(root, findNode(root, "B"));
+    cout << "After B:       "; preorder(root); cout << endl;
+
+    cout << "\nDeleting root...\n";
+    deleteNode(root, root);
+    cout << "Tree is " << (root ? "not empty" : "empty") << endl;
+    return 0;
+}
