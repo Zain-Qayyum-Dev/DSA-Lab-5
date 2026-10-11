@@ -1,0 +1,56 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <string>
+using namespace std;
+
+struct TreeNode {
+    string data;
+    TreeNode* parent;
+    vector<TreeNode*> children;
+    TreeNode(string d, TreeNode* p = nullptr) : data(d), parent(p) {}
+    TreeNode* addChild(string d) {
+        TreeNode* c = new TreeNode(d, this);
+        children.push_back(c);
+        return c;
+    }
+};
+
+void bfs(TreeNode* root) {
+    if (!root) return;
+    queue<TreeNode*> q;
+    q.push(root);
+    while (!q.empty()) {
+        TreeNode* cur = q.front();
+        q.pop();
+        cout << cur->data << " ";
+        for (TreeNode* c : cur->children) q.push(c);
+    }
+}
+
+void preorder(TreeNode* n) {
+    if (!n) return;
+    cout << n->data << " ";                       
+    for (TreeNode* c : n->children) preorder(c);
+}
+
+void postorder(TreeNode* n) {
+    if (!n) return;
+    for (TreeNode* c : n->children) postorder(c);
+    cout << n->data << " ";                       
+}
+
+int main() {
+    TreeNode* root = new TreeNode("A");
+    TreeNode* b = root->addChild("B");
+    root->addChild("C");
+    TreeNode* d = root->addChild("D");
+    b->addChild("E");
+    b->addChild("F");
+    d->addChild("G");
+
+    cout << "BFS:        "; bfs(root);       cout << endl;
+    cout << "Pre-order:  "; preorder(root);  cout << endl;
+    cout << "Post-order: "; postorder(root); cout << endl;
+    return 0;
+}
