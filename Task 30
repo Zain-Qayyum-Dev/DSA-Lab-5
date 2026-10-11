@@ -1,0 +1,108 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+
+struct TreeNode {
+    int data;
+    TreeNode* parent;
+    vector<TreeNode*> children;
+};
+
+TreeNode* createNode(int val, TreeNode* parent) {
+    TreeNode* n = new TreeNode;
+    n->data = val;
+    n->parent = parent;
+    return n;
+}
+
+TreeNode* findNode(TreeNode* root, int val) {
+    if (root == nullptr) return nullptr;
+    if (root->data == val) return root;
+    for (TreeNode* c : root->children) {
+        TreeNode* found = findNode(c, val);
+        if (found != nullptr) return found;
+    }
+    return nullptr;
+}
+
+bool addChild(TreeNode* root, int parentVal, int val) {
+    if (root == nullptr) {
+        cout << "Error: tree is empty.\n";
+        return false;
+    }
+    if (findNode(root, val) != nullptr) {
+        cout << "Error: value " << val << " already exists.\n";
+        return false;
+    }
+    TreeNode* p = findNode(root, parentVal);
+    if (p == nullptr) {
+        cout << "Error: parent " << parentVal << " not found.\n";
+        return false;
+    }
+    p->children.push_back(createNode(val, p));
+    return true;
+}
+
+int height(TreeNode* node) {
+    if (node == nullptr) return -1;
+    int maxChild = -1;
+    for (TreeNode* c : node->children) {
+        int h = height(c);
+        if (h > maxChild) maxChild = h;
+    }
+    return 1 + maxChild;
+}
+
+int depth(TreeNode* node) {
+    if (node == nullptr) return -1;
+    int d = 0;
+    while (node->parent != nullptr) {
+        d++;
+        node = node->parent;
+    }
+    return d;
+}
+
+void testHeightDepth(TreeNode* root, int val) {
+    TreeNode* n = findNode(root, val);
+    if (n == nullptr) {
+        cout << "Error: node " << val << " not found.\n";
+        return;
+    }
+    cout << "Node " << val
+         << " | Depth: " << depth(n)
+         << " | Height: " << height(n) << endl;
+}
+
+int main() {
+    TreeNode* root = createNode(1, nullptr);
+    addChild(root, 1, 2);
+    addChild(root, 1, 3);
+    addChild(root, 1, 4);
+    addChild(root, 2, 5);
+    addChild(root, 2, 6);
+    addChild(root, 3, 7);
+    addChild(root, 4, 8);
+    addChild(root, 4, 9);
+    addChild(root, 4, 10);
+    addChild(root, 5, 11);
+    addChild(root, 7, 12);
+
+    cout << "--- Task 3: Height and Depth ---\n";
+    testHeightDepth(root, 1);
+    testHeightDepth(root, 2);
+    testHeightDepth(root, 3);
+    testHeightDepth(root, 4);
+    testHeightDepth(root, 6);
+    testHeightDepth(root, 11);
+    testHeightDepth(root, 12);
+
+    cout << "\nHeight of the whole tree: " << height(root) << endl;
+    cout << "Height of empty tree: " << height(nullptr) << endl;
+
+    TreeNode* single = createNode(50, nullptr);
+    cout << "Single-node tree: ";
+    testHeightDepth(single, 50);
+
+    return 0;
+}
